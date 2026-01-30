@@ -3,12 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contingência Transplantes V21</title>
+    <title>Contingência Transplantes V22</title>
     <style>
+        /* Tenta carregar a fonte local, se não tiver, usa Arial/Sans */
+        @font-face {
+            font-family: 'mont';
+            src: url('./Montserrat-Regular.otf');
+        }
+
         /* --- GERAL --- */
         :root { --bg-color: #f0f2f5; --text-color: #333; --card-bg: #ffffff; --input-border: #ccd0d5; --primary-color: #d32f2f; }
         body.dark-mode { --bg-color: #18191a; --text-color: #e4e6eb; --card-bg: #242526; --input-border: #3e4042; --primary-color: #ff5252; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        
+        body {
+            /* Garante que se a fonte falhar, usa uma padrão do sistema */
+            font-family: 'mont', 'Segoe UI', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+
         .main-wrapper { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 1100px; align-items: flex-start; }
         .input-card { flex: 2; background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 320px; }
         .preview-card { flex: 1; background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-width: 350px; }
@@ -35,7 +53,7 @@
         /* === ETIQUETA ÓRGÃO (10x4 cm) === */
         .lbl-orgao-container {
             width: 100mm; height: 40mm;
-            background: white; color: black; font-family: 'Arial Narrow', sans-serif;
+            background: white; color: black; font-family: 'mont', sans-serif;
             display: flex; flex-direction: column; overflow: hidden;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); box-sizing: border-box; border: 1px solid #eee; 
         }
@@ -44,24 +62,19 @@
         .lbl-orgao-title { font-size: 14pt; font-weight: 900; text-transform: uppercase; text-align: center; width: 100%; border-bottom: 2px solid #000; margin-bottom: 4px; padding-bottom: 2px; }
         .lbl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .lbl-row { display: flex; align-items: baseline; line-height: 1.3; margin-bottom: 1px; font-size: 9pt; }
-        .lbl-label { font-weight: bold; margin-right: 5px; font-size: 8.5pt; text-transform: uppercase; }
+        .lbl-label { font-weight: bold; margin-right: 5px; font-size: 10pt; text-transform: uppercase; }
         .lbl-data { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 
         /* ================================================================= */
-        /* === ETIQUETA AMOSTRA (8.5x2.5) - ALINHAMENTO V21 === */
+        /* === ETIQUETA AMOSTRA (8.5x2.5) - CORRIGIDA === */
         /* ================================================================= */
         .lbl-dual-sheet {
             width: 85mm; height: 25mm; 
             background: white; 
             display: flex; 
-            
-            /* Trava no início para controlar a margem esquerda com precisão */
             justify-content: flex-start; 
             align-items: center; 
-            
             box-sizing: border-box; 
-            
-            /* AJUSTE V21: Empurra a primeira etiqueta 5mm para a direita */
             padding-left: 5mm; 
             padding-right: 0;
             overflow: hidden;
@@ -70,25 +83,40 @@
 
         .lbl-small-single {
             width: 37mm; height: 21mm; 
-            background: white; color: black; font-family: 'Arial Narrow', sans-serif;
+            background: white; color: black; font-family: 'mont', sans-serif;
             display: flex; flex-direction: column; overflow: hidden;
             padding: 0 1mm; box-sizing: border-box; border-radius: 2px; border: 1px solid #eee; 
         }
 
-        /* AJUSTE V21: Espaço entre elas (Gap) fixo em 4mm */
-        .lbl-small-single + .lbl-small-single {
-            margin-left: 4mm; 
-        }
+        .lbl-small-single + .lbl-small-single { margin-left: 4mm; }
 
         .mini-name {
-            font-weight: bold; text-transform: uppercase; text-align: center;
+            font-weight: 900; /* Extra bold para o nome */
+            text-transform: uppercase; text-align: center;
             line-height: 1.0; margin-bottom: 2px; min-height: 22px; max-height: 33px; 
             overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-            border-bottom: 1.5px solid black; padding-top: 1px;
+            border-bottom: 2px solid black; /* Linha mais grossa como na foto */
+            padding-top: 1px;
             display: flex; align-items: center; justify-content: center;
         }
-        .mini-row { display: flex; justify-content: flex-start; font-size: 8.5pt; line-height: 1.2; margin-top: 1px; font-weight: 600; }
-        .mini-label { font-weight: normal; font-size: 7.5pt; margin-right: 4px; }
+        
+        /* AQUI ESTÁ O SEGREDO DO ALINHAMENTO */
+        .mini-row { 
+            display: flex; 
+            justify-content: flex-start; 
+            /* 'baseline' alinha pela linha base do texto, não pelo topo/centro da caixa */
+            align-items: baseline; 
+            font-size: 7pt; /* Tamanho da DATA (Maior) */
+            font-weight: 700; /* Negrito para a DATA */
+            line-height: 1.2; 
+            margin-top: 1px; 
+        }
+        
+        .mini-label { 
+            font-weight: 400; /* Normal para o rótulo (ex: DN:) */
+            font-size: 8.5pt; /* Tamanho do Rótulo (Menor) */
+            margin-right: 5px; 
+        }
 
         /* --- PRINT --- */
         #printable-area { display: none; }
@@ -106,10 +134,9 @@
                 height: 25mm !important; 
                 overflow: hidden !important; 
                 page-break-after: always; 
-                /* Garante as margens na impressão */
                 display: flex !important; 
                 justify-content: flex-start !important;
-                padding-left: 5mm !important; /* Força os 5mm na impressão */
+                padding-left: 5mm !important; 
             }
             .lbl-small-single + .lbl-small-single { margin-left: 4mm !important; }
             .lbl-small-single { border: none; }
@@ -122,7 +149,7 @@
 <div class="main-wrapper">
     <div class="input-card">
         <div class="header-row">
-            <h3>Contingência Transplantes V21</h3>
+            <h3>Contingência Transplantes V22</h3>
             <button class="theme-btn" onclick="toggleTheme()">🌗 Tema</button>
         </div>
 
@@ -221,9 +248,9 @@
         const dn = fmtDate(document.getElementById('m_nasc').value);
         const coleta = fmtDateTime(document.getElementById('m_coleta').value);
 
-        let fontSize = "9pt";
-        if (nome.length > 35) fontSize = "6.5pt";
-        else if (nome.length > 25) fontSize = "7.5pt";
+        let fontSize = "10pt"; /* Fonte base um pouco maior para o nome */
+        if (nome.length > 35) fontSize = "7pt";
+        else if (nome.length > 25) fontSize = "8.5pt";
 
         const singleLabel = `
             <div class="lbl-small-single">
