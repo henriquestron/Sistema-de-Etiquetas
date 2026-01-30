@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contingência Transplantes V21</title>
+    <style>
+        /* --- GERAL --- */
+        :root { --bg-color: #f0f2f5; --text-color: #333; --card-bg: #ffffff; --input-border: #ccd0d5; --primary-color: #d32f2f; }
+        body.dark-mode { --bg-color: #18191a; --text-color: #e4e6eb; --card-bg: #242526; --input-border: #3e4042; --primary-color: #ff5252; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        .main-wrapper { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 1100px; align-items: flex-start; }
+        .input-card { flex: 2; background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 320px; }
+        .preview-card { flex: 1; background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-width: 350px; }
+        
+        /* UI */
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        .theme-btn { background: transparent; border: 1px solid var(--text-color); padding: 5px 15px; border-radius: 20px; cursor: pointer; color: var(--text-color); }
+        .tab-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; background: var(--input-border); cursor: pointer; font-weight: 600; color: #555; transition: 0.3s; }
+        .tab-btn.active { background: var(--primary-color); color: #fff; }
+        .form-section { display: none; }
+        .form-section.active { display: block; animation: fadeEffect 0.5s; }
+        @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full { grid-column: span 2; }
+        label { display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; }
+        input { width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--card-bg); color: var(--text-color); box-sizing: border-box; font-family: inherit; }
+        .input-group { display: flex; gap: 5px; }
+        .btn-now { padding: 0 10px; background: #eee; border: 1px solid var(--input-border); border-radius: 6px; cursor: pointer; font-size: 0.8rem; white-space: nowrap; }
+        .btn-now:hover { background: #ddd; }
+        .action-btn { width: 100%; margin-top: 20px; padding: 12px; background: var(--primary-color); color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        #live-preview { margin-top: 10px; padding: 15px; background: #e9ecef; border-radius: 8px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--input-border); }
+
+        /* === ETIQUETA ÓRGÃO (10x4 cm) === */
+        .lbl-orgao-container {
+            width: 100mm; height: 40mm;
+            background: white; color: black; font-family: 'Arial Narrow', sans-serif;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); box-sizing: border-box; border: 1px solid #eee; 
+        }
+        .lbl-header { background: rgb(255, 255, 255); color: rgb(0, 0, 0); text-align: center; font-weight: bold; font-size: 9pt; padding: 2px 0; text-transform: uppercase; border-bottom: 1px solid black; }
+        .lbl-body { padding: 4px 6px; flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+        .lbl-orgao-title { font-size: 14pt; font-weight: 900; text-transform: uppercase; text-align: center; width: 100%; border-bottom: 2px solid #000; margin-bottom: 4px; padding-bottom: 2px; }
+        .lbl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .lbl-row { display: flex; align-items: baseline; line-height: 1.3; margin-bottom: 1px; font-size: 9pt; }
+        .lbl-label { font-weight: bold; margin-right: 5px; font-size: 8.5pt; text-transform: uppercase; }
+        .lbl-data { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+
+        /* ================================================================= */
+        /* === ETIQUETA AMOSTRA (8.5x2.5) - ALINHAMENTO V21 === */
+        /* ================================================================= */
+        .lbl-dual-sheet {
+            width: 85mm; height: 25mm; 
+            background: white; 
+            display: flex; 
+            
+            /* Trava no início para controlar a margem esquerda com precisão */
+            justify-content: flex-start; 
+            align-items: center; 
+            
+            box-sizing: border-box; 
+            
+            /* AJUSTE V21: Empurra a primeira etiqueta 5mm para a direita */
+            padding-left: 5mm; 
+            padding-right: 0;
+            overflow: hidden;
+        }
+        #live-preview .lbl-dual-sheet { box-shadow: 0 2px 5px rgba(0,0,0,0.2); border: 1px solid #eee; }
+
+        .lbl-small-single {
+            width: 37mm; height: 21mm; 
+            background: white; color: black; font-family: 'Arial Narrow', sans-serif;
+            display: flex; flex-direction: column; overflow: hidden;
+            padding: 0 1mm; box-sizing: border-box; border-radius: 2px; border: 1px solid #eee; 
+        }
+
+        /* AJUSTE V21: Espaço entre elas (Gap) fixo em 4mm */
+        .lbl-small-single + .lbl-small-single {
+            margin-left: 4mm; 
+        }
+
+        .mini-name {
+            font-weight: bold; text-transform: uppercase; text-align: center;
+            line-height: 1.0; margin-bottom: 2px; min-height: 22px; max-height: 33px; 
+            overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+            border-bottom: 1.5px solid black; padding-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mini-row { display: flex; justify-content: flex-start; font-size: 8.5pt; line-height: 1.2; margin-top: 1px; font-weight: 600; }
+        .mini-label { font-weight: normal; font-size: 7.5pt; margin-right: 4px; }
+
+        /* --- PRINT --- */
+        #printable-area { display: none; }
+        @media print {
+            body > .main-wrapper { display: none !important; }
+            html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; }
+            #printable-area { display: block !important; visibility: visible; position: absolute; top: 0; left: 0; margin: 0; padding: 0; }
+            #printable-area * { visibility: visible; }
+            
+            .lbl-orgao-container { box-shadow: none; border: none; width: 100mm !important; height: 40mm !important; margin: 0 !important; page-break-after: always; }
+            
+            .lbl-dual-sheet { 
+                box-shadow: none; border: none; 
+                width: 85mm !important; 
+                height: 25mm !important; 
+                overflow: hidden !important; 
+                page-break-after: always; 
+                /* Garante as margens na impressão */
+                display: flex !important; 
+                justify-content: flex-start !important;
+                padding-left: 5mm !important; /* Força os 5mm na impressão */
+            }
+            .lbl-small-single + .lbl-small-single { margin-left: 4mm !important; }
+            .lbl-small-single { border: none; }
+        }
+    </style>
+    <style id="dynamic-page-size"></style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <div class="input-card">
+        <div class="header-row">
+            <h3>Contingência Transplantes V21</h3>
+            <button class="theme-btn" onclick="toggleTheme()">🌗 Tema</button>
+        </div>
+
+        <div class="tab-row">
+            <button class="tab-btn active" onclick="switchTab('orgao')">🫀 Órgão (10x4)</button>
+            <button class="tab-btn" onclick="switchTab('amostra')">🩸 Amostra (Dupla)</button>
+        </div>
+
+        <div id="form-orgao" class="form-section active">
+            <div class="form-grid">
+                <div class="full"><label>Órgão</label><input type="text" id="p_orgao" oninput="updatePreview()" placeholder="Ex: RIM DIREITO"></div>
+                <div class="full"><label>Nome do Doador</label><input type="text" id="p_doador" oninput="updatePreview()"></div>
+                <div><label>Data Nasc. Doador</label><input type="date" id="p_nasc" oninput="updatePreview()"></div>
+                <div><label>RGCT</label><input type="text" id="p_rgct" oninput="updatePreview()"></div>
+                <div><label>Data/Hora Coleta</label><div class="input-group"><input type="datetime-local" id="p_coleta" oninput="updatePreview()"><button class="btn-now" onclick="setNow('p_coleta')">⏱️ Agora</button></div></div>
+                <div><label>Clamp (Hora)</label><div class="input-group"><input type="time" id="p_clamp" oninput="updatePreview()"><button class="btn-now" onclick="setNowTime('p_clamp')">⏱️</button></div></div>
+            </div>
+            <button class="action-btn" onclick="printLabel()">🖨️ Imprimir Etiqueta Órgão</button>
+        </div>
+
+        <div id="form-amostra" class="form-section">
+            <p style="font-size:0.85em; color: var(--primary-color); margin-bottom: 10px; background: rgba(211, 47, 47, 0.1); padding: 8px; border-radius: 4px;">
+                ℹ️ Imprime 2 etiquetas. 8,5x2,5cm.
+            </p>
+            <div class="form-grid">
+                <div class="full"><label>Nome Completo (Auto-Ajuste)</label><input type="text" id="m_nome" oninput="updatePreview()"></div>
+                <div><label>Data Nascimento</label><input type="date" id="m_nasc" oninput="updatePreview()"></div>
+                <div class="full"><label>Data/Hora Coleta</label><div class="input-group"><input type="datetime-local" id="m_coleta" oninput="updatePreview()"><button class="btn-now" onclick="setNow('m_coleta')">⏱️ Agora</button></div></div>
+            </div>
+            <button class="action-btn" onclick="printLabel()">🖨️ Imprimir Etiqueta Amostra</button>
+        </div>
+    </div>
+
+    <div class="preview-card">
+        <h4>Prévia</h4>
+        <div id="live-preview"></div>
+        <p style="font-size: 0.8rem; color: #888; margin-top: 15px; text-align: center;" id="preview-caption">
+            Etiqueta Única 10x4 cm
+        </p>
+    </div>
+</div>
+
+<div id="printable-area"></div>
+
+<script>
+    let activeTab = 'orgao';
+    window.onload = () => updatePreview();
+
+    function setNow(id) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById(id).value = now.toISOString().slice(0,16);
+        updatePreview();
+    }
+
+    function setNowTime(id) {
+        const now = new Date();
+        const timeString = now.toTimeString().split(' ')[0].substring(0,5);
+        document.getElementById(id).value = timeString;
+        updatePreview();
+    }
+
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+
+    function switchTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+        if(tab === 'orgao'){
+            document.querySelector('.tab-btn:first-child').classList.add('active');
+            document.getElementById('form-orgao').classList.add('active');
+            document.getElementById('preview-caption').innerText = "Etiqueta Única 10x4 cm";
+        } else {
+            document.querySelector('.tab-btn:last-child').classList.add('active');
+            document.getElementById('form-amostra').classList.add('active');
+            document.getElementById('preview-caption').innerText = "Papel Duplo 8,5x2,5 cm";
+        }
+        updatePreview();
+    }
+
+    function fmtDate(isoStr) {
+        if (!isoStr) return "--/--/----";
+        const [ano, mes, dia] = isoStr.split('-');
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    function fmtDateTime(isoStr) {
+        if (!isoStr) return "";
+        const [data, hora] = isoStr.split('T');
+        const [ano, mes, dia] = data.split('-');
+        return `${dia}/${mes}/${ano} ${hora}`;
+    }
+
+    function getAmostraHTML() {
+        const nome = document.getElementById('m_nome').value || "NOME DO PACIENTE";
+        const dn = fmtDate(document.getElementById('m_nasc').value);
+        const coleta = fmtDateTime(document.getElementById('m_coleta').value);
+
+        let fontSize = "9pt";
+        if (nome.length > 35) fontSize = "6.5pt";
+        else if (nome.length > 25) fontSize = "7.5pt";
+
+        const singleLabel = `
+            <div class="lbl-small-single">
+                <div class="mini-name" style="font-size: ${fontSize};">${nome}</div>
+                <div class="mini-row"><span class="mini-label">DN:</span>${dn}</div>
+                <div class="mini-row"><span class="mini-label">Coleta:</span>${coleta}</div>
+            </div>
+        `;
+        return `<div class="lbl-dual-sheet">${singleLabel}${singleLabel}</div>`;
+    }
+
+    function getOrgaoHTML() {
+        const orgao = document.getElementById('p_orgao').value || "ÓRGÃO";
+        const doador = document.getElementById('p_doador').value || "Nome do Doador";
+        const dn = fmtDate(document.getElementById('p_nasc').value);
+        const rgct = document.getElementById('p_rgct').value || "---";
+        const coleta = fmtDateTime(document.getElementById('p_coleta').value);
+        const clamp = document.getElementById('p_clamp').value || "";
+
+        return `
+            <div class="lbl-orgao-container">
+                <div class="lbl-header">IDENTIFICAÇÃO DE ÓRGÃO / TECIDO</div>
+                <div class="lbl-body">
+                    <div class="lbl-orgao-title">${orgao}</div>
+                    <div class="lbl-row" style="margin-bottom: 5px;">
+                        <span class="lbl-label">DOADOR:</span><span class="lbl-data">${doador}</span>
+                    </div>
+                    <div class="lbl-grid">
+                        <div class="lbl-row"><span class="lbl-label">RGCT:</span><span class="lbl-data">${rgct}</span></div>
+                        <div class="lbl-row"><span class="lbl-label">DN:</span><span class="lbl-data">${dn}</span></div>
+                    </div>
+                    <div class="lbl-grid" style="margin-top: 2px;">
+                        <div class="lbl-row"><span class="lbl-label">COLETA:</span><span class="lbl-data">${coleta}</span></div>
+                        <div class="lbl-row"><span class="lbl-label">CLAMP:</span><span class="lbl-data">${clamp}</span></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function updatePreview() {
+        const previewDiv = document.getElementById('live-preview');
+        previewDiv.innerHTML = (activeTab === 'orgao') ? getOrgaoHTML() : getAmostraHTML();
+    }
+
+    function printLabel() {
+        const printArea = document.getElementById('printable-area');
+        const styleSheet = document.getElementById('dynamic-page-size');
+
+        if(activeTab === 'orgao') {
+            printArea.innerHTML = getOrgaoHTML();
+            styleSheet.innerHTML = `
+                @media print {
+                    @page { size: 100mm 40mm; margin: 0; }
+                    .lbl-orgao-container { width: 100mm !important; height: 40mm !important; margin: 0 !important; page-break-after: always; } 
+                }
+            `;
+        } else {
+            printArea.innerHTML = getAmostraHTML();
+            styleSheet.innerHTML = `
+                @media print {
+                    @page { size: 85mm 25mm; margin: 0; }
+                    .lbl-dual-sheet { width: 85mm !important; height: 25mm !important; margin: 0 !important; overflow: hidden; page-break-after: always; }
+                }
+            `;
+        }
+        window.print();
+    }
+</script>
+
+</body>
+</html>
